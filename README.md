@@ -1,4 +1,16 @@
-# postgres protocol go
+# Postgres Protocol Go
+
+This project implements the PostgreSQL wire protocol in Go using only the standard library.
+
+(Currently under development 🚧)
+
+## Getting Started
+
+To run the server, use the following command:
+
+```bash
+go run cmd/server/main.go
+```
 
 ## Folder Structure
 
@@ -20,5 +32,10 @@ postgres-protocol-go/
 
 ## Aknowledgements
 
-(Official Protocol Documentation)[https://www.postgresql.org/docs/current/protocol.html]
-(Message Formats)[https://www.postgresql.org/docs/current/protocol-message-formats.html]
+[Official Protocol Documentation](https://www.postgresql.org/docs/current/protocol.html)
+
+[Message Formats](https://www.postgresql.org/docs/current/protocol-message-formats.html)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
