@@ -6,7 +6,11 @@ This project implements the PostgreSQL wire protocol in Go using only the standa
 
 ## Getting Started
 
-To run the server, use the following command:
+To run the server, use the following commands:
+
+```bash
+cp .env.example .env
+```
 
 ```bash
 go run cmd/server/main.go
