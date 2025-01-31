@@ -26,24 +26,10 @@ func NewPgConnection(config models.ConnConfig, conn net.Conn) (*PgConnection, er
 	pgConnection := PgConnection{conn: conn, config: config}
 
 	ProcessStartup(pgConnection)
-
-	answer, err := pgConnection.ReadMessage()
+	err := ProcessAuth(pgConnection)
 
 	if err != nil {
-		return nil, fmt.Errorf("error reading from connection: %w", err)
-	}
-
-	identifier := string(answer[0:1])
-
-	switch identifier {
-	case "R":
-		err := ProcessAuth(conn, answer, config)
-
-		if err != nil {
-			fmt.Println(err)
-		}
-	default:
-		fmt.Println("Unknown message identifier:", identifier)
+		return nil, err
 	}
 
 	return &pgConnection, nil
@@ -84,13 +70,10 @@ func (pg *PgConnection) ReadMessage() ([]byte, error) {
 	message := make([]byte, messageLength-1)
 
 	// Read the rest of the message
-	totalRead := 4
-	for totalRead < int(messageLength-1) {
-		n, err := pg.conn.Read(message[totalRead:])
-		if err != nil {
-			return nil, fmt.Errorf("error reading from connection: %w", err)
-		}
-		totalRead += n
+	_, err = pg.conn.Read(message)
+
+	if err != nil {
+		return nil, fmt.Errorf("error reading from connection: %w", err)
 	}
 
 	fullMessage := append(header, message...)

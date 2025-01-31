@@ -5,68 +5,52 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"net"
-	"postgres-protocol-go/pkg/models"
+	"postgres-protocol-go/pkg/messages"
 	"postgres-protocol-go/pkg/utils"
 )
 
-func ProcessAuth(conn net.Conn, answer []byte, config models.ConnConfig) error {
-	var authType, err = utils.ParseAuthenticationMethod(answer)
+func ProcessAuth(pgConnection PgConnection) error {
+	answer, err := pgConnection.ReadMessage()
 
 	if err != nil {
-		fmt.Println("Error parsing authentication method:", err)
-		return nil
+		return fmt.Errorf("error reading from connection: %w", err)
 	}
 
-	fmt.Println("Auth type:", authType)
+	identifier := utils.ParseIdentifier(answer)
+
+	if identifier != string(messages.Auth) {
+		return fmt.Errorf("expected auth message, got %s", identifier)
+	}
+
+	authType := parseAuthType(answer)
 
 	switch authType {
 	case authenticationOk:
 		fmt.Println("Authentication successful")
 		return nil
 	case authenticationMD5Password:
-		if config.Password == nil {
+		if pgConnection.config.Password == nil {
 			return fmt.Errorf("password is required for MD5 authentication")
 		}
-		salt := answer[9:13]
 
-		hashedPassword := hashPasswordMD5(*config.Password, config.Username, string(salt))
+		salt := parseSalt(answer)
+
+		hashedPassword := hashPasswordMD5(*pgConnection.config.Password, pgConnection.config.Username, string(salt))
 
 		messageContent := make([]byte, 0)
-		messageContent = append(messageContent, utils.StringToBytes(hashedPassword)...)
-		messageContent = append(messageContent, 0) // Ensure single null terminator
+		messageContent = append(messageContent, hashedPassword...)
 
-		messageContent = append(utils.Int32ToBytes(int32(len(messageContent)+3)), messageContent...)
+		err := pgConnection.SendMessage(messages.Password, messageContent)
 
-		finalMessage := make([]byte, 0)
-		finalMessage = append(finalMessage, 'p')
-		finalMessage = append(finalMessage, messageContent...)
-
-		fmt.Printf(string(finalMessage[0:1]))
-		fmt.Printf("Message Length: %d\n", binary.BigEndian.Uint32(finalMessage[1:5]))
-
-		fmt.Println("Sending authentication message:", finalMessage)
-
-		_, err := conn.Write(finalMessage)
 		if err != nil {
-			fmt.Println("Error sending message:", err)
+			return err
 		}
-		conn.Read(answer)
 
-		utils.LogBackendAnswer(answer)
-
-		identifier := utils.ParseIdentifier(answer)
-
-		switch identifier {
-		case "E":
-			return fmt.Errorf("error authenticating: %s", utils.ParseBackendErrorMessage(answer))
-		default:
-			fmt.Println(utils.ParseAuthenticationMethod(answer))
-		}
+		ProcessAuth(pgConnection)
 
 		return nil
 	default:
-		return fmt.Errorf("unsupported authentication method: %s", authType)
+		return fmt.Errorf("unsupported authentication method: %d", authType)
 	}
 }
 
@@ -91,3 +75,11 @@ const (
 	authenticationSASLContinue      = 11
 	authenticationSASLFinal         = 12
 )
+
+func parseAuthType(message []byte) uint32 {
+	return binary.BigEndian.Uint32(message[5:9])
+}
+
+func parseSalt(message []byte) string {
+	return string(message[9:13])
+}
