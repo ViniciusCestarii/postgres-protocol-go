@@ -26,7 +26,23 @@ func ProcessAuth(pgConnection PgConnection) error {
 
 	switch authType {
 	case authenticationOk:
-		fmt.Println("Authentication successful")
+		if pgConnection.isVerbose() {
+			fmt.Println("Authentication successful")
+			fmt.Println("Waiting for ReadyForQuery message")
+		}
+
+		// todo: better implement this case
+
+		message, err := pgConnection.readMessage()
+
+		if err != nil {
+			return err
+		}
+
+		if utils.ParseIdentifier(message) != string(messages.ReadyForQuery) {
+			return fmt.Errorf("expected ReadyForQuery message, got %s", utils.ParseIdentifier(message))
+		}
+
 		return nil
 	case authenticationMD5Password:
 		if pgConnection.config.Password == nil {

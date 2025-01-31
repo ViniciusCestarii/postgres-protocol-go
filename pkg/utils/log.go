@@ -6,17 +6,19 @@ import (
 )
 
 func LogBackendAnswer(answer []byte) {
-	logSeparator()
+	backendLogSeparator()
 	var identifier = ParseIdentifier(answer)
 	fmt.Printf("Identifier: %s\n", identifier)
 
 	messageLength := ParseMessageLength(answer)
 	fmt.Printf("Message Length: %d\n", messageLength)
+
+	logSeparator()
 }
 
 func LogFrontendRequest(request []byte, isStartupMessage bool) {
-	logSeparator()
-	fmt.Printf("Fronted Request: %d\n", request)
+	frontedLogSeparator()
+	fmt.Printf("Message: %d\n", request)
 
 	if isStartupMessage {
 		messageLength := binary.BigEndian.Uint32(request[0:4])
@@ -28,6 +30,16 @@ func LogFrontendRequest(request []byte, isStartupMessage bool) {
 
 	messageLength := ParseMessageLength(request)
 	fmt.Printf("Message Length: %d\n", messageLength)
+
+	logSeparator()
+}
+
+func frontedLogSeparator() {
+	fmt.Println("--------------------------------------FRONTEND-MESSAGE")
+}
+
+func backendLogSeparator() {
+	fmt.Println("---------------------------------------BACKEND-MESSAGE")
 }
 
 func logSeparator() {
