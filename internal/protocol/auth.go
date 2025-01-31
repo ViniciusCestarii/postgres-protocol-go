@@ -34,13 +34,14 @@ func ProcessAuth(pgConnection PgConnection) error {
 		}
 
 		salt := parseSalt(answer)
-
 		hashedPassword := hashPasswordMD5(*pgConnection.config.Password, pgConnection.config.Username, string(salt))
 
-		messageContent := make([]byte, 0)
-		messageContent = append(messageContent, hashedPassword...)
+		buf := NewWriteBuffer(1024)
+		buf.StartMessage(messages.Password)
+		buf.WriteString(hashedPassword)
+		buf.FinishMessage()
 
-		err := pgConnection.SendMessage(messages.Password, messageContent)
+		err := pgConnection.SendMessage(*buf)
 
 		if err != nil {
 			return err

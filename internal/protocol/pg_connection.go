@@ -1,7 +1,6 @@
 package protocol
 
 import (
-	"encoding/binary"
 	"fmt"
 	"net"
 	"postgres-protocol-go/pkg/messages"
@@ -35,19 +34,11 @@ func NewPgConnection(config models.ConnConfig, conn net.Conn) (*PgConnection, er
 	return &pgConnection, nil
 }
 
-func (pg *PgConnection) SendMessage(identifier byte, message []byte) error {
-
-	message = append(message, 0) // Ensure single null terminator
-	message = utils.AppendMessageLength(message)
-
-	isStartupMessage := identifier == messages.Startup
-
-	if !isStartupMessage {
-		message = append([]byte{identifier}, message...)
-	}
+func (pg *PgConnection) SendMessage(buf WriteBuffer) error {
+	message := buf.Bytes
 
 	if pg.config.Verbose != nil && *pg.config.Verbose {
-		utils.LogFrontendRequest(message, isStartupMessage)
+		utils.LogFrontendRequest(message, buf.IsStartupMessage)
 	}
 
 	_, err := pg.conn.Write(message)
@@ -60,12 +51,15 @@ func (pg *PgConnection) SendMessage(identifier byte, message []byte) error {
 func (pg *PgConnection) ReadMessage() ([]byte, error) {
 	// Read the first 5 bytes to get the message type and length
 	header := make([]byte, 5)
+
 	_, err := pg.conn.Read(header)
 	if err != nil {
 		return nil, fmt.Errorf("error reading from connection: %w", err)
 	}
 
-	messageLength := binary.BigEndian.Uint32(header[1:5])
+	identifier := utils.ParseIdentifier(header)
+
+	messageLength := utils.ParseMessageLength(header)
 
 	message := make([]byte, messageLength-1)
 
@@ -77,6 +71,11 @@ func (pg *PgConnection) ReadMessage() ([]byte, error) {
 	}
 
 	fullMessage := append(header, message...)
+
+	if identifier == string(messages.Error) {
+		utils.LogBackendAnswer(fullMessage)
+		return nil, fmt.Errorf("error from backend: %s", utils.ParseBackendErrorMessage(message))
+	}
 
 	if pg.config.Verbose != nil && *pg.config.Verbose {
 		utils.LogBackendAnswer(fullMessage)

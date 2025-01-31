@@ -5,4 +5,5 @@ const (
 	Startup  = 0 // No identifier
 	Auth     = 'R'
 	Password = 'p'
+	Error    = 'E'
 )
