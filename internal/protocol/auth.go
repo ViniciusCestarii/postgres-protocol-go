@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"postgres-protocol-go/pkg/messages"
+	"postgres-protocol-go/internal/messages"
 	"postgres-protocol-go/pkg/utils"
 )
 

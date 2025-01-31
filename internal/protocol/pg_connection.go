@@ -3,7 +3,7 @@ package protocol
 import (
 	"fmt"
 	"net"
-	"postgres-protocol-go/pkg/messages"
+	"postgres-protocol-go/internal/messages"
 	"postgres-protocol-go/pkg/models"
 	"postgres-protocol-go/pkg/utils"
 )
