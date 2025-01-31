@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	dbName := "sagep-auth-development"
+	dbName := "postgres"
 	password := "123456"
 	vebose := true
 	connConfig := models.ConnConfig{
@@ -19,10 +19,19 @@ func main() {
 		Verbose:  &vebose,
 	}
 
-	_, err := protocol.NewPgConnection(connConfig, nil)
+	pgConnection, err := protocol.NewPgConnection(connConfig, nil)
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+
+	value, err := pgConnection.Query("SELECT * FROM user;")
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println(value)
 }

@@ -34,7 +34,11 @@ func NewPgConnection(config models.ConnConfig, conn net.Conn) (*PgConnection, er
 	return &pgConnection, nil
 }
 
-func (pg *PgConnection) SendMessage(buf WriteBuffer) error {
+func (pg *PgConnection) Query(query string) (string, error) {
+	return ProcessSimpleQuery(*pg, query)
+}
+
+func (pg *PgConnection) sendMessage(buf WriteBuffer) error {
 	message := buf.Bytes
 
 	if pg.config.Verbose != nil && *pg.config.Verbose {
@@ -48,7 +52,7 @@ func (pg *PgConnection) SendMessage(buf WriteBuffer) error {
 	return nil
 }
 
-func (pg *PgConnection) ReadMessage() ([]byte, error) {
+func (pg *PgConnection) readMessage() ([]byte, error) {
 	// Read the first 5 bytes to get the message type and length
 	header := make([]byte, 5)
 

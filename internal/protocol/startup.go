@@ -15,5 +15,5 @@ func ProcessStartup(pgConnection PgConnection) {
 	buf.WriteString("") // must be null-terminated
 	buf.FinishMessage()
 
-	pgConnection.SendMessage(*buf)
+	pgConnection.sendMessage(*buf)
 }

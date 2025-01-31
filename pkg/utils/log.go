@@ -7,8 +7,6 @@ import (
 
 func LogBackendAnswer(answer []byte) {
 	logSeparator()
-	fmt.Printf("Backend Answer: %d\n", answer)
-
 	var identifier = ParseIdentifier(answer)
 	fmt.Printf("Identifier: %s\n", identifier)
 

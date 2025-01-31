@@ -10,7 +10,7 @@ import (
 )
 
 func ProcessAuth(pgConnection PgConnection) error {
-	answer, err := pgConnection.ReadMessage()
+	answer, err := pgConnection.readMessage()
 
 	if err != nil {
 		return fmt.Errorf("error reading from connection: %w", err)
@@ -41,7 +41,7 @@ func ProcessAuth(pgConnection PgConnection) error {
 		buf.WriteString(hashedPassword)
 		buf.FinishMessage()
 
-		err := pgConnection.SendMessage(*buf)
+		err := pgConnection.sendMessage(*buf)
 
 		if err != nil {
 			return err
