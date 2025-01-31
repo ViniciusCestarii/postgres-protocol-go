@@ -23,16 +23,17 @@ func NewPgConnection(config models.ConnConfig, conn net.Conn) (*PgConnection, er
 		var err error
 		conn, err = net.Dial("tcp", url)
 		if err != nil {
-			return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
+			return nil, fmt.Errorf("failed to establish a TCP connection to PostgreSQL: %w", err)
 		}
 	}
 
 	pgConnection := PgConnection{conn: conn, config: config}
 
-	ProcessStartup(pgConnection)
+	SendStartup(pgConnection)
 	err := ProcessAuth(pgConnection)
 
 	if err != nil {
+		pgConnection.Close()
 		return nil, err
 	}
 
@@ -46,7 +47,7 @@ func (pg *PgConnection) Query(query string) (string, error) {
 func (pg *PgConnection) sendMessage(buf *WriteBuffer) error {
 	message := buf.Bytes
 
-	if pg.config.Verbose != nil && *pg.config.Verbose {
+	if pg.isVerbose() {
 		utils.LogFrontendRequest(message, buf.IsStartupMessage)
 	}
 
@@ -62,6 +63,7 @@ func (pg *PgConnection) readMessage() ([]byte, error) {
 	header := make([]byte, 5)
 
 	_, err := pg.conn.Read(header)
+
 	if err != nil {
 		return nil, fmt.Errorf("error reading from connection: %w", err)
 	}
@@ -86,9 +88,22 @@ func (pg *PgConnection) readMessage() ([]byte, error) {
 		return nil, fmt.Errorf("error from backend: %s", utils.ParseBackendErrorMessage(message))
 	}
 
-	if pg.config.Verbose != nil && *pg.config.Verbose {
+	if pg.isVerbose() {
 		utils.LogBackendAnswer(fullMessage)
 	}
 
 	return fullMessage, nil
+}
+
+func (pg *PgConnection) Close() {
+	buf := NewWriteBuffer(5)
+	buf.StartMessage(messages.Terminate)
+	buf.FinishMessage()
+
+	pg.sendMessage(buf)
+	pg.conn.Close()
+}
+
+func (pg *PgConnection) isVerbose() bool {
+	return pg.config.Verbose != nil && *pg.config.Verbose
 }

@@ -1,6 +1,6 @@
 package protocol
 
-func ProcessStartup(pgConnection PgConnection) {
+func SendStartup(pgConnection PgConnection) {
 
 	protocolVersion := int32(3 << 16) // 3 << 16 = 196608 version 3.0
 

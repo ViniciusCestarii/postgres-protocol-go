@@ -7,4 +7,5 @@ const (
 	Password    = 'p'
 	Error       = 'E'
 	SimpleQuery = 'Q'
+	Terminate   = 'X'
 )

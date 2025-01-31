@@ -13,7 +13,7 @@ func ProcessAuth(pgConnection PgConnection) error {
 	answer, err := pgConnection.readMessage()
 
 	if err != nil {
-		return fmt.Errorf("error reading from connection: %w", err)
+		return err
 	}
 
 	identifier := utils.ParseIdentifier(answer)
@@ -47,9 +47,7 @@ func ProcessAuth(pgConnection PgConnection) error {
 			return err
 		}
 
-		ProcessAuth(pgConnection)
-
-		return nil
+		return ProcessAuth(pgConnection)
 	default:
 		return fmt.Errorf("unsupported authentication method: %d", authType)
 	}

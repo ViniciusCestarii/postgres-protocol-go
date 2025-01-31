@@ -25,8 +25,10 @@ func main() {
 
 	if err != nil {
 		fmt.Println(err)
+		pgConnection.Close()
 		return
 	}
 
 	fmt.Println(value)
+	pgConnection.Close()
 }
