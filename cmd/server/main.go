@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	connConfig, err := utils.GetConfigParameters()
+	connConfig, err := utils.GetEnvConnConfig()
 
 	if err != nil {
 		fmt.Println(err)

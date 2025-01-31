@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func GetConfigParameters() (models.ConnConfig, error) {
+func GetEnvConnConfig() (models.ConnConfig, error) {
 	loadEnvFile(".env")
 
 	port, err := strconv.Atoi(*getEnv("PGPORT", "5432"))
