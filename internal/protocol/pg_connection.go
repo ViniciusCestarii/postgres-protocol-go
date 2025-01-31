@@ -43,7 +43,7 @@ func (pg *PgConnection) Query(query string) (string, error) {
 	return ProcessSimpleQuery(*pg, query)
 }
 
-func (pg *PgConnection) sendMessage(buf WriteBuffer) error {
+func (pg *PgConnection) sendMessage(buf *WriteBuffer) error {
 	message := buf.Bytes
 
 	if pg.config.Verbose != nil && *pg.config.Verbose {

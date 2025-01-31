@@ -8,7 +8,7 @@ func ProcessSimpleQuery(pgConnection PgConnection, query string) (string, error)
 	buf.WriteString(query)
 	buf.FinishMessage()
 
-	err := pgConnection.sendMessage(*buf)
+	err := pgConnection.sendMessage(buf)
 
 	if err != nil {
 		return "", err

@@ -41,7 +41,7 @@ func ProcessAuth(pgConnection PgConnection) error {
 		buf.WriteString(hashedPassword)
 		buf.FinishMessage()
 
-		err := pgConnection.sendMessage(*buf)
+		err := pgConnection.sendMessage(buf)
 
 		if err != nil {
 			return err
