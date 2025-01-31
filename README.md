@@ -2,6 +2,8 @@
 
 This project implements the PostgreSQL wire protocol in Go using only the standard library.
 
+(Currently under development 🚧)
+
 ## Getting Started
 
 To run the server, use the following command:
