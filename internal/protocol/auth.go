@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net"
-	enum_auth "postgres-protocol-go/pkg/enum"
 	"postgres-protocol-go/pkg/models"
 	"postgres-protocol-go/pkg/utils"
 )
@@ -19,10 +18,13 @@ func ProcessAuth(conn net.Conn, answer []byte, config models.ConnConfig) error {
 		return nil
 	}
 
-	fmt.Println("Auth type:", authType.String())
+	fmt.Println("Auth type:", authType)
 
 	switch authType {
-	case enum_auth.AuthenticationMD5Password:
+	case authenticationOk:
+		fmt.Println("Authentication successful")
+		return nil
+	case authenticationMD5Password:
 		if config.Password == nil {
 			return fmt.Errorf("password is required for MD5 authentication")
 		}
@@ -51,13 +53,13 @@ func ProcessAuth(conn net.Conn, answer []byte, config models.ConnConfig) error {
 		}
 		conn.Read(answer)
 
-		utils.LogServerAnswer(answer)
+		utils.LogBackendAnswer(answer)
 
 		identifier := utils.ParseIdentifier(answer)
 
 		switch identifier {
 		case "E":
-			return fmt.Errorf("error authenticating: %s", utils.ParseErrorMessage(answer))
+			return fmt.Errorf("error authenticating: %s", utils.ParseBackendErrorMessage(answer))
 		default:
 			fmt.Println(utils.ParseAuthenticationMethod(answer))
 		}
@@ -76,3 +78,16 @@ func md5Hash(input string) string {
 	hash := md5.Sum([]byte(input))
 	return hex.EncodeToString(hash[:])
 }
+
+const (
+	authenticationOk                = 0
+	authenticationKerberosV5        = 2
+	authenticationCleartextPassword = 3
+	authenticationMD5Password       = 5
+	authenticationGSS               = 7
+	authenticationGSSContinue       = 8
+	authenticationSSPI              = 9
+	authenticationSASL              = 10
+	authenticationSASLContinue      = 11
+	authenticationSASLFinal         = 12
+)
