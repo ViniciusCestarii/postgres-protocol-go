@@ -66,10 +66,10 @@ func ProcessSimpleQuery(pgConnection PgConnection, query string) (*models.QueryR
 			}
 
 			if identifierFieldType == "0" {
-				fmt.Println("PostgreSQL notice: %s", utils.ParseNullTerminatedString(message[6:]))
+				fmt.Printf("PostgreSQL notice: %s", utils.ParseNullTerminatedString(message[6:]))
 			}
 
-			fmt.Println("PostgreSQL notice: %s: %s", identifierFieldType, utils.ParseNullTerminatedString(message[6:]))
+			fmt.Printf("PostgreSQL notice: %s: %s", identifierFieldType, utils.ParseNullTerminatedString(message[6:]))
 
 		case string(messages.ReadyForQuery):
 			return queryResult, nil
