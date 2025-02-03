@@ -41,6 +41,7 @@ func NewPgConnection(config models.ConnConfig, conn net.Conn) (*PgConnection, er
 
 // todo: return a struct containing more data than just array of rows
 // todo: make row data generic
+// todo: support and try other queries beside FETCH
 func (pg *PgConnection) Query(query string) ([]models.Row, error) {
 	return ProcessSimpleQuery(*pg, query)
 }
