@@ -76,7 +76,7 @@ func ProcessSimpleQuery(pgConnection PgConnection, query string) (*models.QueryR
 
 		default:
 			if pgConnection.isVerbose() {
-				fmt.Printf("Unknown message: %s\n", string(message))
+				fmt.Printf("Query: Unknown message: %s\n", string(message))
 			}
 		}
 	}

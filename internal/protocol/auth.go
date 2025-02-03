@@ -31,15 +31,22 @@ func ProcessAuth(pgConnection PgConnection) error {
 			fmt.Println("Waiting for ReadyForQuery message")
 		}
 
-		// there are other useful messages that can be processed here like client_enconding, DateStyle, BackendKeyData, etc.
-		return pgConnection.readMessageUntil(func(message []byte) (bool, error) {
+		for {
+			message, err := pgConnection.readMessage()
+			if err != nil {
+				return err
+			}
+
+			// there are other useful messages that can be processed here like client_enconding, DateStyle, BackendKeyData, etc.
 			switch utils.ParseIdentifier(message) {
 			case string(messages.ReadyForQuery):
-				return true, nil
+				return nil
 			default:
-				return false, nil
+				if pgConnection.isVerbose() {
+					fmt.Printf("Auth: Unknown message: %s\n", string(message))
+				}
 			}
-		})
+		}
 	case authenticationMD5Password:
 		if pgConnection.config.Password == nil {
 			return fmt.Errorf("password is required for MD5 authentication")

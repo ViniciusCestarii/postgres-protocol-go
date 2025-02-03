@@ -91,23 +91,6 @@ func (pg *PgConnection) readMessage() ([]byte, error) {
 	return fullMessage, nil
 }
 
-func (pg *PgConnection) readMessageUntil(condition func([]byte) (bool, error)) error {
-	for {
-		message, err := pg.readMessage()
-		if err != nil {
-			return err
-		}
-
-		done, err := condition(message)
-		if err != nil {
-			return err
-		}
-		if done {
-			return nil
-		}
-	}
-}
-
 func (pg *PgConnection) Close() {
 	buf := NewWriteBuffer(5)
 	buf.StartMessage(messages.Terminate)
