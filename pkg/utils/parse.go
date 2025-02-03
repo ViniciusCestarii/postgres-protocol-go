@@ -20,7 +20,7 @@ func ParseBackendErrorMessage(answer []byte) string {
 	return fmt.Sprintf("Code: %s, Message: %s", codeIdentifier, message)
 }
 
-func ExtractNullTerminatedString(data []byte) string {
+func ParseNullTerminatedString(data []byte) string {
 	idx := bytes.IndexByte(data, 0)
 	if idx == -1 {
 		return string(data)
