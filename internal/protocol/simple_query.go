@@ -6,9 +6,10 @@ import (
 	"postgres-protocol-go/internal/messages"
 	"postgres-protocol-go/pkg/models"
 	"postgres-protocol-go/pkg/utils"
+	"strings"
 )
 
-func ProcessSimpleQuery(pgConnection PgConnection, query string) ([]models.Row, error) {
+func ProcessSimpleQuery(pgConnection PgConnection, query string) (*models.QueryResult, error) {
 	buf := NewWriteBuffer(1024)
 	buf.StartMessage(messages.SimpleQuery)
 	buf.WriteString(query)
@@ -34,7 +35,7 @@ func ProcessSimpleQuery(pgConnection PgConnection, query string) ([]models.Row, 
 		fmt.Printf("Fields: %+v\n", fields)
 	}
 
-	rows := make([]models.Row, 0)
+	rows := make([]map[string]interface{}, 0)
 
 	pgConnection.readMessageUntil(func(message []byte) (bool, error) {
 		switch utils.ParseIdentifier(message) {
@@ -53,16 +54,23 @@ func ProcessSimpleQuery(pgConnection PgConnection, query string) ([]models.Row, 
 		fmt.Printf("Rows: %+v\n", rows)
 	}
 
-	return rows, nil
+	queryResult := models.QueryResult{
+		Fields:   fields,
+		Rows:     rows,
+		Command:  strings.Fields(query)[0],
+		RowCount: len(rows),
+	}
+
+	return &queryResult, nil
 }
 
-func parseDataRow(answer []byte, fields []models.Field) models.Row {
-	row := models.Row{Data: make(map[string]interface{})}
+func parseDataRow(answer []byte, fields []models.Field) map[string]interface{} {
+	row := make(map[string]interface{})
 	idxRead := 7 // Skip Header
 
 	for _, field := range fields {
 		value := parseColumnValue(answer, field, idxRead)
-		row.Data[field.Name] = value
+		row[field.Name] = value
 	}
 	return row
 }
@@ -100,6 +108,12 @@ func parseField(answer []byte) ([]models.Field, error) {
 		formatCode := binary.BigEndian.Uint16(answer[idxRead:])
 		idxRead += 2
 
+		format := "binary"
+
+		if formatCode == 0 {
+			format = "text"
+		}
+
 		fields[i] = models.Field{
 			Name:         fieldName,
 			TableOID:     tableOID,
@@ -107,7 +121,7 @@ func parseField(answer []byte) ([]models.Field, error) {
 			DataTypeOID:  dataTypeOID,
 			Size:         dataTypeSize,
 			TypeModifier: typeModifier,
-			FormatCode:   formatCode,
+			Format:       format,
 		}
 	}
 
@@ -115,10 +129,6 @@ func parseField(answer []byte) ([]models.Field, error) {
 }
 
 func parseNumberOfFields(message []byte) uint16 {
-	return binary.BigEndian.Uint16(message[5:7])
-}
-
-func parseNumberOfColumns(message []byte) uint16 {
 	return binary.BigEndian.Uint16(message[5:7])
 }
 
@@ -132,10 +142,10 @@ func parseColumnValue(answer []byte, field models.Field, idxRead int) any {
 
 	value := answer[idxRead : idxRead+int(columnValueLength)]
 
-	switch field.FormatCode {
-	case 0: // text
+	switch field.Format {
+	case "text":
 		return string(value)
-	case 1: // binary
+	case "binary":
 		return value
 	}
 
