@@ -59,24 +59,19 @@ func (pg *PgConnection) sendMessage(buf *WriteBuffer) error {
 }
 
 func (pg *PgConnection) readMessage() ([]byte, error) {
-	// Read the first 5 bytes to get the message type and length
 	header := make([]byte, 5)
-
 	_, err := pg.conn.Read(header)
-
 	if err != nil {
 		return nil, fmt.Errorf("error reading from connection: %w", err)
 	}
 
 	identifier := utils.ParseIdentifier(header)
-
 	messageLength := utils.ParseMessageLength(header)
 
-	message := make([]byte, messageLength-1)
+	remaining := messageLength - 4
 
-	// Read the rest of the message
+	message := make([]byte, remaining)
 	_, err = pg.conn.Read(message)
-
 	if err != nil {
 		return nil, fmt.Errorf("error reading from connection: %w", err)
 	}
@@ -93,6 +88,26 @@ func (pg *PgConnection) readMessage() ([]byte, error) {
 	}
 
 	return fullMessage, nil
+}
+
+func (pg *PgConnection) readMessageUntil(condition func([]byte) (bool, error)) error {
+	conditionMet := false
+
+	for conditionMet == false {
+		message, err := pg.readMessage()
+		if err != nil {
+			return err
+		}
+		condition, err := condition(message)
+
+		if err != nil {
+			return err
+		}
+
+		conditionMet = condition
+	}
+
+	return nil
 }
 
 func (pg *PgConnection) Close() {
