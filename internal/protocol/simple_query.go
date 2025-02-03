@@ -20,48 +20,66 @@ func ProcessSimpleQuery(pgConnection PgConnection, query string) (*models.QueryR
 		return nil, err
 	}
 
-	answer, err := pgConnection.readMessage()
-	if err != nil {
-		return nil, err
+	queryResult := &models.QueryResult{
+		Command: strings.Fields(query)[0], // Default to first word of the query
+		Rows:    make([]map[string]interface{}, 0),
 	}
 
-	fields, err := parseField(answer)
+	var fields []models.Field
 
-	if err != nil {
-		return nil, err
-	}
+	for {
+		message, err := pgConnection.readMessage()
+		if err != nil {
+			return nil, err
+		}
 
-	if pgConnection.isVerbose() {
-		fmt.Printf("Fields: %+v\n", fields)
-	}
-
-	rows := make([]map[string]interface{}, 0)
-
-	pgConnection.readMessageUntil(func(message []byte) (bool, error) {
 		switch utils.ParseIdentifier(message) {
-		case string(messages.ReadyForQuery):
-			return true, nil
+		case string(messages.RowDescription):
+			fields, err = parseField(message)
+			if err != nil {
+				return nil, err
+			}
+			queryResult.Fields = fields
+
 		case string(messages.DataRow):
 			row := parseDataRow(message, fields)
-			rows = append(rows, row)
-			return false, nil
+			queryResult.Rows = append(queryResult.Rows, row)
+
+		case string(messages.CommandComplete):
+			parts := strings.Fields(string(message))
+			if len(parts) > 0 {
+				queryResult.Command = parts[0] // Extract command name
+			}
+			queryResult.RowCount = len(queryResult.Rows)
+
+		case string(messages.Error):
+			identifierFieldType := string(message[5:6])
+			if identifierFieldType == "0" {
+				return nil, fmt.Errorf("PostgreSQL error: %s", utils.ParseNullTerminatedString(message[6:]))
+			}
+			return nil, fmt.Errorf("PostgreSQL error: %s: %s", identifierFieldType, utils.ParseNullTerminatedString(message[6:]))
+
+		case string(messages.Notice):
+			identifierFieldType := string(message[5:6])
+			if pgConnection.isVerbose() {
+				continue
+			}
+
+			if identifierFieldType == "0" {
+				fmt.Println("PostgreSQL notice: %s", utils.ParseNullTerminatedString(message[6:]))
+			}
+
+			fmt.Println("PostgreSQL notice: %s: %s", identifierFieldType, utils.ParseNullTerminatedString(message[6:]))
+
+		case string(messages.ReadyForQuery):
+			return queryResult, nil
+
 		default:
-			return false, nil
+			if pgConnection.isVerbose() {
+				fmt.Printf("Unknown message: %s\n", string(message))
+			}
 		}
-	})
-
-	if pgConnection.isVerbose() {
-		fmt.Printf("Rows: %+v\n", rows)
 	}
-
-	queryResult := models.QueryResult{
-		Fields:   fields,
-		Rows:     rows,
-		Command:  strings.Fields(query)[0],
-		RowCount: len(rows),
-	}
-
-	return &queryResult, nil
 }
 
 func parseDataRow(answer []byte, fields []models.Field) map[string]interface{} {

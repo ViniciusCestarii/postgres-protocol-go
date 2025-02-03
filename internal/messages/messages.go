@@ -12,4 +12,5 @@ const (
 	RowDescription  = 'T'
 	DataRow         = 'D'
 	CommandComplete = 'C'
+	Notice          = 'N'
 )
