@@ -21,7 +21,7 @@ func ProcessSimpleQuery(pgConnection PgConnection, query string) (*models.QueryR
 	}
 
 	queryResult := &models.QueryResult{
-		Command: strings.Fields(query)[0], // Default to first word of the query
+		Command: strings.Fields(query)[0], // First word of the query
 		Rows:    make([]map[string]interface{}, 0),
 	}
 
@@ -46,10 +46,6 @@ func ProcessSimpleQuery(pgConnection PgConnection, query string) (*models.QueryR
 			queryResult.Rows = append(queryResult.Rows, row)
 
 		case string(messages.CommandComplete):
-			parts := strings.Fields(string(message))
-			if len(parts) > 0 {
-				queryResult.Command = parts[0] // Extract command name
-			}
 			queryResult.RowCount = len(queryResult.Rows)
 
 			return queryResult, nil
