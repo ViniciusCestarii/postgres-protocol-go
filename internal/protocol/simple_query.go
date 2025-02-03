@@ -8,7 +8,7 @@ import (
 	"postgres-protocol-go/pkg/utils"
 )
 
-func ProcessSimpleQuery(pgConnection PgConnection, query string) (string, error) {
+func ProcessSimpleQuery(pgConnection PgConnection, query string) ([]models.Row, error) {
 	buf := NewWriteBuffer(1024)
 	buf.StartMessage(messages.SimpleQuery)
 	buf.WriteString(query)
@@ -16,48 +16,61 @@ func ProcessSimpleQuery(pgConnection PgConnection, query string) (string, error)
 
 	err := pgConnection.sendMessage(buf)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	answer, err := pgConnection.readMessage()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	fields, err := parseField(answer)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	if len(fields) > 0 {
-		rows := 0
-		pgConnection.readMessageUntil(func(message []byte) (bool, error) {
-			switch utils.ParseIdentifier(message) {
-			case string(messages.CommandComplete):
-				idx := 5
-				tag := utils.ParseNullTerminatedString(message[idx:])
+	if pgConnection.isVerbose() {
+		fmt.Printf("Fields: %+v\n", fields)
+	}
 
-				if tag == fmt.Sprintf("SELECT %d", rows) {
-					return true, nil
-				}
-				return false, nil
-			case string(messages.DataRow):
-				// todo: parse DataRow
-				rows++
-				parseDataRows(message)
-				return false, nil
-			default:
-				return false, nil
+	rows := make([]models.Row, 0)
+
+	pgConnection.readMessageUntil(func(message []byte) (bool, error) {
+		switch utils.ParseIdentifier(message) {
+		case string(messages.CommandComplete):
+			idx := 5
+			tag := utils.ParseNullTerminatedString(message[idx:])
+
+			if tag == fmt.Sprintf("SELECT %d", len(rows)) {
+				return true, nil
 			}
-		})
+			return false, nil
+		case string(messages.DataRow):
+			row := parseDataRow(message, fields)
+			rows = append(rows, row)
+			return false, nil
+		default:
+			return false, nil
+		}
+	})
+
+	if pgConnection.isVerbose() {
+		fmt.Printf("Rows: %+v\n", rows)
 	}
 
-	return string(answer), nil
+	return rows, nil
 }
 
-func parseDataRows(answer []byte) error {
-	return nil
+func parseDataRow(answer []byte, fields []models.Field) models.Row {
+	row := models.Row{Data: make(map[string]interface{})}
+	idxRead := 7 // Skip Header
+
+	for _, field := range fields {
+		value := parseColumnValue(answer, field, idxRead)
+		row.Data[field.Name] = value
+	}
+	return row
 }
 
 func parseField(answer []byte) ([]models.Field, error) {
@@ -109,4 +122,28 @@ func parseField(answer []byte) ([]models.Field, error) {
 
 func parseNumberOfFields(message []byte) uint16 {
 	return binary.BigEndian.Uint16(message[5:7])
+}
+
+func parseNumberOfColumns(message []byte) uint16 {
+	return binary.BigEndian.Uint16(message[5:7])
+}
+
+func parseColumnValue(answer []byte, field models.Field, idxRead int) any {
+	columnValueLength := int32(binary.BigEndian.Uint32(answer[idxRead:]))
+	idxRead += 4
+
+	if columnValueLength == -1 {
+		return nil
+	}
+
+	value := answer[idxRead : idxRead+int(columnValueLength)]
+
+	switch field.FormatCode {
+	case 0: // text
+		return string(value)
+	case 1: // binary
+		return value
+	}
+
+	return nil
 }

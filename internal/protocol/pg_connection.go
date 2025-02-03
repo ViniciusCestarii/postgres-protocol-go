@@ -16,7 +16,6 @@ type PgConnection struct {
 func NewPgConnection(config models.ConnConfig, conn net.Conn) (*PgConnection, error) {
 	if conn == nil {
 		url := fmt.Sprintf("%s:%d", config.Hostname, config.Port)
-		fmt.Println(*config.Verbose)
 		if config.Verbose != nil && *config.Verbose {
 			fmt.Printf("Connecting to PostgreSQL at %s\n", url)
 		}
@@ -40,7 +39,9 @@ func NewPgConnection(config models.ConnConfig, conn net.Conn) (*PgConnection, er
 	return &pgConnection, nil
 }
 
-func (pg *PgConnection) Query(query string) (string, error) {
+// todo: return a struct containing more data than just array of rows
+// todo: make row data generic
+func (pg *PgConnection) Query(query string) ([]models.Row, error) {
 	return ProcessSimpleQuery(*pg, query)
 }
 
