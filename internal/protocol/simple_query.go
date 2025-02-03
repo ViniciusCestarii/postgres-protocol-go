@@ -38,14 +38,8 @@ func ProcessSimpleQuery(pgConnection PgConnection, query string) ([]models.Row, 
 
 	pgConnection.readMessageUntil(func(message []byte) (bool, error) {
 		switch utils.ParseIdentifier(message) {
-		case string(messages.CommandComplete):
-			idx := 5
-			tag := utils.ParseNullTerminatedString(message[idx:])
-
-			if tag == fmt.Sprintf("SELECT %d", len(rows)) {
-				return true, nil
-			}
-			return false, nil
+		case string(messages.ReadyForQuery):
+			return true, nil
 		case string(messages.DataRow):
 			row := parseDataRow(message, fields)
 			rows = append(rows, row)

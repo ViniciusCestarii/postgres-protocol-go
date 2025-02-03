@@ -29,6 +29,17 @@ func main() {
 		return
 	}
 
-	fmt.Println(value)
+	fmt.Println("All user: ", value)
+
+	value, err = pgConnection.Query("SELECT * FROM pg_stat_activity;")
+
+	if err != nil {
+		fmt.Println(err)
+		pgConnection.Close()
+		return
+	}
+
+	fmt.Println("All pg_stat_activity", value)
+
 	pgConnection.Close()
 }

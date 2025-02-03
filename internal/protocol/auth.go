@@ -31,7 +31,7 @@ func ProcessAuth(pgConnection PgConnection) error {
 			fmt.Println("Waiting for ReadyForQuery message")
 		}
 
-		// there other useful messages that can be processed here like client_enconding, DateStyle, BackendKeyData, etc.
+		// there are other useful messages that can be processed here like client_enconding, DateStyle, BackendKeyData, etc.
 		return pgConnection.readMessageUntil(func(message []byte) (bool, error) {
 			switch utils.ParseIdentifier(message) {
 			case string(messages.ReadyForQuery):
