@@ -1,14 +1,14 @@
 package models
 
-// todo: make row generic
+// todo: make rows generic
 type QueryResult struct {
 	Command  string
 	Fields   []Field
-	Oid      uint16
 	RowCount int
-	Rows     map[string]interface{}
+	Rows     []map[string]interface{}
 }
 
+// todo: parse these int for compreensible values
 type Field struct {
 	Name         string
 	TableOID     uint32
