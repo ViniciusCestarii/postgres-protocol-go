@@ -91,23 +91,20 @@ func (pg *PgConnection) readMessage() ([]byte, error) {
 }
 
 func (pg *PgConnection) readMessageUntil(condition func([]byte) (bool, error)) error {
-	conditionMet := false
-
-	for conditionMet == false {
+	for {
 		message, err := pg.readMessage()
 		if err != nil {
 			return err
 		}
-		condition, err := condition(message)
 
+		done, err := condition(message)
 		if err != nil {
 			return err
 		}
-
-		conditionMet = condition
+		if done {
+			return nil
+		}
 	}
-
-	return nil
 }
 
 func (pg *PgConnection) Close() {
