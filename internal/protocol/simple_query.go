@@ -52,6 +52,8 @@ func ProcessSimpleQuery(pgConnection PgConnection, query string) (*models.QueryR
 			}
 			queryResult.RowCount = len(queryResult.Rows)
 
+			return queryResult, nil
+
 		case string(messages.Error):
 			identifierFieldType := string(message[5:6])
 			if identifierFieldType == "0" {
@@ -72,7 +74,7 @@ func ProcessSimpleQuery(pgConnection PgConnection, query string) (*models.QueryR
 			fmt.Printf("PostgreSQL notice: %s: %s", identifierFieldType, utils.ParseNullTerminatedString(message[6:]))
 
 		case string(messages.ReadyForQuery):
-			return queryResult, nil
+			continue
 
 		default:
 			if pgConnection.isVerbose() {
