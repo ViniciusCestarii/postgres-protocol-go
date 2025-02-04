@@ -40,7 +40,6 @@ func NewPgConnection(config models.ConnConfig, conn net.Conn) (*PgConnection, er
 	return &pgConnection, nil
 }
 
-// todo support Extended Query
 func (pg *PgConnection) Query(query string, params ...interface{}) (*models.QueryResult, error) {
 
 	if len(params) > 0 {
