@@ -24,6 +24,7 @@ func ProcessAuth(pgConnection PgConnection) error {
 
 	authType := parseAuthType(answer)
 
+	// todo: implement SCRAM-SHA-256
 	switch authType {
 	case authenticationOk:
 		if pgConnection.isVerbose() {
