@@ -1,6 +1,5 @@
 package models
 
-// todo: make rows generic
 type QueryResult struct {
 	Command  string
 	Fields   []Field
