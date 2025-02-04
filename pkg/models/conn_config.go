@@ -9,5 +9,5 @@ type ConnConfig struct {
 }
 
 type DriveConfig struct {
-	Verbose *bool
+	Verbose bool
 }

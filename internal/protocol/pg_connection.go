@@ -23,7 +23,7 @@ func NewPgConnection(connUrl string, driveConfig models.DriveConfig) (*PgConnect
 
 	url := fmt.Sprintf("%s:%d", connConfig.Host, connConfig.Port)
 
-	if driveConfig.Verbose != nil && *driveConfig.Verbose {
+	if driveConfig.Verbose {
 		fmt.Printf("Connecting to PostgreSQL at %s\n", url)
 	}
 
@@ -110,7 +110,7 @@ func (pg *PgConnection) Close() {
 }
 
 func (pg *PgConnection) isVerbose() bool {
-	return pg.driveConfig.Verbose != nil && *pg.driveConfig.Verbose
+	return pg.driveConfig.Verbose
 }
 
 func parseConnUrl(connUrl string) models.ConnConfig {

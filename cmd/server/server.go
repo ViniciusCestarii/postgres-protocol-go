@@ -63,13 +63,11 @@ func getConfig() (string, models.DriveConfig) {
 
 	PGVERBOSE := os.Getenv("PGVERBOSE")
 
-	var verbose *bool
+	var verbose bool
 	if PGVERBOSE == "true" {
-		v := true
-		verbose = &v
+		verbose = true
 	} else if PGVERBOSE == "false" {
-		v := false
-		verbose = &v
+		verbose = false
 	}
 
 	driveConfig := models.DriveConfig{
