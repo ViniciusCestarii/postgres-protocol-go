@@ -4,6 +4,39 @@ This project implements the PostgreSQL wire protocol in Go using only the standa
 
 (Currently under development 🚧)
 
+## Usage
+
+```go
+func main() {
+	connStr := "postgres://postgres:123456@localhost:5432/postgres"
+
+	driveConfig := models.DriveConfig{
+		Verbose: true,
+	}
+
+	pgConnection, err := protocol.NewPgConnection(connStr, driveConfig)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	userToFind := "postgres"
+
+	res, err := pgConnection.Query("SELECT * FROM pg_user WHERE usename = $1;", userToFind)
+
+	if err != nil {
+		fmt.Println(err)
+		pgConnection.Close()
+		return
+	}
+
+	fmt.Println("Postgres user: ", res.Rows)
+
+	pgConnection.Close()
+}
+```
+
 ## Getting Started
 
 To run the server, use the following commands:
