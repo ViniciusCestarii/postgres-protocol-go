@@ -1,13 +1,13 @@
 package models
 
 type ConnConfig struct {
-	// Connection
 	Port     int
-	Hostname string
-	Username string
+	Host     string
+	User     string
 	Database *string
 	Password *string
+}
 
-	// Options
+type DriveConfig struct {
 	Verbose *bool
 }

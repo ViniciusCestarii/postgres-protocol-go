@@ -50,12 +50,12 @@ func ProcessAuth(pgConnection PgConnection) error {
 			}
 		}
 	case authenticationMD5Password:
-		if pgConnection.config.Password == nil {
+		if pgConnection.connConfig.Password == nil {
 			return fmt.Errorf("password is required for MD5 authentication")
 		}
 
 		salt := parseSalt(answer)
-		hashedPassword := hashPasswordMD5(*pgConnection.config.Password, pgConnection.config.Username, string(salt))
+		hashedPassword := hashPasswordMD5(*pgConnection.connConfig.Password, pgConnection.connConfig.User, string(salt))
 
 		buf := pool.NewWriteBuffer(1024)
 		buf.StartMessage(messages.Password)

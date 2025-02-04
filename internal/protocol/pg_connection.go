@@ -3,34 +3,40 @@ package protocol
 import (
 	"fmt"
 	"net"
+	"net/url"
 	"postgres-protocol-go/internal/pool"
 	"postgres-protocol-go/internal/protocol/messages"
 	"postgres-protocol-go/pkg/models"
 	"postgres-protocol-go/pkg/utils"
+	"strconv"
+	"strings"
 )
 
 type PgConnection struct {
-	conn   net.Conn
-	config models.ConnConfig
+	conn        net.Conn
+	connConfig  models.ConnConfig
+	driveConfig models.DriveConfig
 }
 
-func NewPgConnection(config models.ConnConfig, conn net.Conn) (*PgConnection, error) {
-	if conn == nil {
-		url := fmt.Sprintf("%s:%d", config.Hostname, config.Port)
-		if config.Verbose != nil && *config.Verbose {
-			fmt.Printf("Connecting to PostgreSQL at %s\n", url)
-		}
-		var err error
-		conn, err = net.Dial("tcp", url)
-		if err != nil {
-			return nil, fmt.Errorf("failed to establish a TCP connection to PostgreSQL: %w", err)
-		}
+func NewPgConnection(connUrl string, driveConfig models.DriveConfig) (*PgConnection, error) {
+	connConfig := parseConnUrl(connUrl)
+
+	url := fmt.Sprintf("%s:%d", connConfig.Host, connConfig.Port)
+
+	if driveConfig.Verbose != nil && *driveConfig.Verbose {
+		fmt.Printf("Connecting to PostgreSQL at %s\n", url)
 	}
 
-	pgConnection := PgConnection{conn: conn, config: config}
+	conn, err := net.Dial("tcp", url)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to establish a TCP connection to PostgreSQL: %w", err)
+	}
+
+	pgConnection := PgConnection{conn: conn, connConfig: connConfig, driveConfig: driveConfig}
 
 	SendStartup(pgConnection)
-	err := ProcessAuth(pgConnection)
+	err = ProcessAuth(pgConnection)
 
 	if err != nil {
 		pgConnection.Close()
@@ -104,5 +110,68 @@ func (pg *PgConnection) Close() {
 }
 
 func (pg *PgConnection) isVerbose() bool {
-	return pg.config.Verbose != nil && *pg.config.Verbose
+	return pg.driveConfig.Verbose != nil && *pg.driveConfig.Verbose
+}
+
+func parseConnUrl(connUrl string) models.ConnConfig {
+	connConfig := models.ConnConfig{}
+
+	if strings.HasPrefix(connUrl, "postgres://") {
+		parsedUrl, err := url.Parse(connUrl)
+		if err != nil {
+			return connConfig // Return empty config on error
+		}
+		connConfig.Host = parsedUrl.Hostname()
+		port := parsedUrl.Port()
+		if port != "" {
+			portInt, err := strconv.Atoi(port)
+			if err == nil {
+				connConfig.Port = portInt
+			}
+		}
+		connConfig.User = parsedUrl.User.Username()
+		if password, ok := parsedUrl.User.Password(); ok {
+			connConfig.Password = &password
+		}
+		path := strings.TrimPrefix(parsedUrl.Path, "/")
+		if path != "" {
+			connConfig.Database = &path
+		}
+		return connConfig
+	}
+
+	split := strings.Fields(connUrl)
+
+	for _, s := range split {
+		if strings.HasPrefix(s, "host=") {
+			host := strings.SplitN(s, "=", 2)[1]
+			connConfig.Host = host
+			continue
+		}
+		if strings.HasPrefix(s, "port=") {
+			portStr := strings.SplitN(s, "=", 2)[1]
+			port, err := strconv.Atoi(portStr)
+			if err == nil {
+				connConfig.Port = port
+			}
+			continue
+		}
+		if strings.HasPrefix(s, "user=") {
+			user := strings.SplitN(s, "=", 2)[1]
+			connConfig.User = user
+			continue
+		}
+		if strings.HasPrefix(s, "dbname=") {
+			dbname := strings.SplitN(s, "=", 2)[1]
+			connConfig.Database = &dbname
+			continue
+		}
+		if strings.HasPrefix(s, "password=") {
+			password := strings.SplitN(s, "=", 2)[1]
+			connConfig.Password = &password
+			continue
+		}
+	}
+
+	return connConfig
 }

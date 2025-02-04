@@ -11,9 +11,9 @@ func SendStartup(pgConnection PgConnection) {
 	buf.StartMessage(0)
 	buf.WriteInt32(protocolVersion)
 	buf.WriteString("user")
-	buf.WriteString(pgConnection.config.Username)
+	buf.WriteString(pgConnection.connConfig.User)
 	buf.WriteString("database")
-	buf.WriteString(*pgConnection.config.Database)
+	buf.WriteString(*pgConnection.connConfig.Database)
 	buf.WriteString("") // must be null-terminated
 	buf.FinishMessage()
 
