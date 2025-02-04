@@ -39,7 +39,7 @@ func NewPgConnection(config models.ConnConfig, conn net.Conn) (*PgConnection, er
 	return &pgConnection, nil
 }
 
-// todo: support and try other queries beside FETCH
+// todo support Extended Query
 func (pg *PgConnection) Query(query string) (*models.QueryResult, error) {
 	return ProcessSimpleQuery(*pg, query)
 }
