@@ -24,7 +24,7 @@ postgres-protocol-go/
 │   ├── server/          # Main entry point for the server
 │   ├── client/          # Optional: Client implementation for testing
 │── internal/
-│   ├── protocol/        # PostgreSQL messages constants
+│   ├── messages/        # PostgreSQL messages constants
 │   ├── protocol/        # PostgreSQL wire protocol handling
 │── pkg/
 │   ├── utils/           # Shared utilities (logging, errors, helpers)
