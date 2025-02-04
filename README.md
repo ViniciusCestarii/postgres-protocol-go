@@ -22,7 +22,6 @@ go run cmd/server/main.go
 postgres-protocol-go/
 │── cmd/
 │   ├── server/          # Main entry point for the server
-│   ├── client/          # Optional: Client implementation for testing
 │── internal/
 │   ├── pool/            # Buff writer
 │   ├── protocol/        # PostgreSQL wire protocol handling
