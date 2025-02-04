@@ -25,7 +25,6 @@ postgres-protocol-go/
 │   ├── client/          # Optional: Client implementation for testing
 │── internal/
 │   ├── pool/            # Buff writer
-│   ├── messages/        # PostgreSQL messages constants
 │   ├── protocol/        # PostgreSQL wire protocol handling
 │── pkg/
 │   ├── utils/           # Shared utilities (logging, errors, helpers)

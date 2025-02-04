@@ -3,7 +3,7 @@ package protocol
 import (
 	"encoding/binary"
 	"fmt"
-	"postgres-protocol-go/internal/messages"
+	"postgres-protocol-go/internal/protocol/messages"
 	"postgres-protocol-go/pkg/models"
 	"postgres-protocol-go/pkg/utils"
 	"strings"

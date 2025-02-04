@@ -1,8 +1,8 @@
 package protocol
 
 import (
-	"postgres-protocol-go/internal/messages"
 	"postgres-protocol-go/internal/pool"
+	"postgres-protocol-go/internal/protocol/messages"
 	"postgres-protocol-go/pkg/models"
 )
 
