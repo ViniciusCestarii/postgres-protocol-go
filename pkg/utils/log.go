@@ -18,15 +18,20 @@ func LogBackendAnswer(answer []byte) {
 	logSeparator()
 }
 
-func LogFrontendRequest(request []byte, isStartupMessage bool) {
+func LogFrontendRequest(request []byte) {
+	idx := 0
+
+	for idx < len(request) {
+		messageLength := int(binary.BigEndian.Uint32(request[idx+1 : idx+5]))
+		LogOneFrontendRequest(request[idx:])
+		idx += int(messageLength) + 1
+	}
+}
+
+func LogOneFrontendRequest(request []byte) {
 	frontedLogSeparator()
 	fmt.Printf("Message: %d\n", request)
 
-	if isStartupMessage {
-		messageLength := binary.BigEndian.Uint32(request[0:4])
-		fmt.Printf("Message Length: %d\n", messageLength)
-		return
-	}
 	var identifier = ParseIdentifier(request)
 	fmt.Printf("Identifier: %s\n", identifier)
 

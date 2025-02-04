@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"postgres-protocol-go/internal/messages"
+	"postgres-protocol-go/internal/pool"
 	"postgres-protocol-go/pkg/utils"
 )
 
@@ -56,7 +57,7 @@ func ProcessAuth(pgConnection PgConnection) error {
 		salt := parseSalt(answer)
 		hashedPassword := hashPasswordMD5(*pgConnection.config.Password, pgConnection.config.Username, string(salt))
 
-		buf := NewWriteBuffer(1024)
+		buf := pool.NewWriteBuffer(1024)
 		buf.StartMessage(messages.Password)
 		buf.WriteString(hashedPassword)
 		buf.FinishMessage()

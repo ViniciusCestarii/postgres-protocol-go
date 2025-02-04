@@ -21,7 +21,7 @@ func main() {
 		return
 	}
 
-	res, err := pgConnection.Query("SELECT * FROM user;")
+	res, err := pgConnection.Query("SELECT * FROM pg_user")
 
 	if err != nil {
 		fmt.Println(err)
@@ -29,22 +29,19 @@ func main() {
 		return
 	}
 
-	fmt.Println("Command: ", res.Command)
-	fmt.Println("Fields: ", res.Fields)
-	fmt.Println("RowCount: ", res.RowCount)
-	fmt.Println("All user: ", res.Rows)
+	fmt.Println("All users: ", res.Rows)
 
-	res, err = pgConnection.Query("SELECT * FROM pg_stat_activity;")
+	userToFind := "postgres"
+
+	res, err = pgConnection.Query("SELECT * FROM pg_user WHERE usename = $1;", userToFind)
 
 	if err != nil {
 		fmt.Println(err)
 		pgConnection.Close()
 		return
 	}
-	fmt.Println("Command: ", res.Command)
-	fmt.Println("Fields: ", res.Fields)
-	fmt.Println("RowCount: ", res.RowCount)
-	fmt.Println("All pg_stat_activity", res.Rows)
+
+	fmt.Println("Postgres user: ", res.Rows)
 
 	pgConnection.Close()
 }

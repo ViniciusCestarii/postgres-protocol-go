@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"postgres-protocol-go/internal/messages"
+	"postgres-protocol-go/internal/pool"
 	"postgres-protocol-go/pkg/models"
 	"postgres-protocol-go/pkg/utils"
 )
@@ -40,15 +41,20 @@ func NewPgConnection(config models.ConnConfig, conn net.Conn) (*PgConnection, er
 }
 
 // todo support Extended Query
-func (pg *PgConnection) Query(query string) (*models.QueryResult, error) {
+func (pg *PgConnection) Query(query string, params ...interface{}) (*models.QueryResult, error) {
+
+	if len(params) > 0 {
+		return ProcessExtendedQuery(*pg, query, params...)
+	}
+
 	return ProcessSimpleQuery(*pg, query)
 }
 
-func (pg *PgConnection) sendMessage(buf *WriteBuffer) error {
+func (pg *PgConnection) sendMessage(buf *pool.WriteBuffer) error {
 	message := buf.Bytes
 
 	if pg.isVerbose() {
-		utils.LogFrontendRequest(message, buf.IsStartupMessage)
+		utils.LogFrontendRequest(message)
 	}
 
 	_, err := pg.conn.Write(message)
@@ -79,7 +85,6 @@ func (pg *PgConnection) readMessage() ([]byte, error) {
 	fullMessage := append(header, message...)
 
 	if identifier == string(messages.Error) {
-		utils.LogBackendAnswer(fullMessage)
 		return nil, fmt.Errorf("error from backend: %s", utils.ParseBackendErrorMessage(message))
 	}
 
@@ -91,7 +96,7 @@ func (pg *PgConnection) readMessage() ([]byte, error) {
 }
 
 func (pg *PgConnection) Close() {
-	buf := NewWriteBuffer(5)
+	buf := pool.NewWriteBuffer(5)
 	buf.StartMessage(messages.Terminate)
 	buf.FinishMessage()
 

@@ -1,20 +1,20 @@
-package protocol
+package pool
 
 import (
 	"encoding/binary"
+	"io"
 )
 
 type WriteBuffer struct {
-	Bytes            []byte
-	IsStartupMessage bool
+	Bytes []byte
 
-	msgStart int
+	msgStart   int
+	paramStart int
 }
 
 func NewWriteBuffer(bufSize int) *WriteBuffer {
 	return &WriteBuffer{
-		Bytes:            make([]byte, 0, bufSize),
-		IsStartupMessage: false,
+		Bytes: make([]byte, 0, bufSize),
 	}
 }
 
@@ -24,7 +24,6 @@ func (buf *WriteBuffer) Reset() {
 
 func (buf *WriteBuffer) StartMessage(c byte) {
 	if c == 0 {
-		buf.IsStartupMessage = true
 		buf.msgStart = len(buf.Bytes)
 		buf.Bytes = append(buf.Bytes, 0, 0, 0, 0)
 	} else {
@@ -36,6 +35,23 @@ func (buf *WriteBuffer) StartMessage(c byte) {
 func (buf *WriteBuffer) FinishMessage() {
 	binary.BigEndian.PutUint32(
 		buf.Bytes[buf.msgStart:], uint32(len(buf.Bytes)-buf.msgStart))
+}
+
+func (buf *WriteBuffer) StartParam() {
+	buf.paramStart = len(buf.Bytes)
+	buf.Bytes = append(buf.Bytes, 0, 0, 0, 0)
+}
+
+func (buf *WriteBuffer) FinishParam() {
+	binary.BigEndian.PutUint32(
+		buf.Bytes[buf.paramStart:], uint32(len(buf.Bytes)-buf.paramStart-4))
+}
+
+var nullParamLength = int32(-1)
+
+func (buf *WriteBuffer) FinishNullParam() {
+	binary.BigEndian.PutUint32(
+		buf.Bytes[buf.paramStart:], uint32(nullParamLength))
 }
 
 func (buf *WriteBuffer) Write(b []byte) (int, error) {
@@ -66,4 +82,10 @@ func (buf *WriteBuffer) WriteBytes(b []byte) {
 func (buf *WriteBuffer) WriteByte(c byte) error {
 	buf.Bytes = append(buf.Bytes, c)
 	return nil
+}
+
+func (buf *WriteBuffer) ReadFrom(r io.Reader) (int64, error) {
+	n, err := r.Read(buf.Bytes[len(buf.Bytes):cap(buf.Bytes)])
+	buf.Bytes = buf.Bytes[:len(buf.Bytes)+n]
+	return int64(n), err
 }
