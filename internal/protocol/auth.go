@@ -69,6 +69,22 @@ func ProcessAuth(pgConnection PgConnection) error {
 		}
 
 		return ProcessAuth(pgConnection)
+	case authenticationCleartextPassword:
+		if pgConnection.connConfig.Password == nil {
+			return fmt.Errorf("password is required for cleartext authentication")
+		}
+
+		buf := pool.NewWriteBuffer(1024)
+		buf.StartMessage(messages.Password)
+		buf.WriteString(*pgConnection.connConfig.Password)
+		buf.FinishMessage()
+
+		err := pgConnection.sendMessage(buf)
+		if err != nil {
+			return err
+		}
+
+		return ProcessAuth(pgConnection)
 	default:
 		return fmt.Errorf("unsupported authentication method: %d", authType)
 	}
