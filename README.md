@@ -10,9 +10,7 @@ This project implements the PostgreSQL wire protocol in Go using only the standa
 func main() {
 	connStr := "postgres://postgres:123456@localhost:5432/postgres"
 
-	driveConfig := models.DriveConfig{
-		Verbose: true,
-	}
+	driveConfig := models.DriveConfig{Verbose: true,}
 
 	pgConnection, err := protocol.NewPgConnection(connStr, driveConfig)
 
@@ -64,6 +62,14 @@ postgres-protocol-go/
 │── tests/               # Integration and unit tests
 │── go.mod               # Go module file
 │── README.md            # Project documentation
+```
+
+## Testing
+
+To run the tests, use the following commands:
+
+```bash
+go test ./tests/...
 ```
 
 ## Aknowledgements
