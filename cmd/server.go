@@ -52,14 +52,9 @@ func getConfig() (string, models.DriveConfig) {
 	PGPASSWORD := os.Getenv("PGPASSWORD")
 	PGPORT := os.Getenv("PGPORT")
 	PGDATABASE := os.Getenv("PGDATABASE")
-	PGSECURE := parseBoolEnv(os.Getenv("PGSECURE"))
+	PGSSLMODE := os.Getenv("PGSSLMODE")
 
-	secure := "disable"
-	if PGSECURE {
-		secure = "require"
-	}
-
-	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", PGHOST, PGUSER, PGPASSWORD, PGDATABASE, PGPORT, secure)
+	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", PGHOST, PGUSER, PGPASSWORD, PGDATABASE, PGPORT, PGSSLMODE)
 
 	PGURL := os.Getenv("PGURL")
 

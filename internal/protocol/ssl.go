@@ -30,7 +30,7 @@ func ProcessSSL(pgConnection *PgConnection) error {
 	}
 
 	tlsConn := tls.Client(pgConnection.conn, &tls.Config{
-		ServerName: pgConnection.connConfig.Host,
+		InsecureSkipVerify: true,
 	})
 
 	if err := tlsConn.Handshake(); err != nil {
