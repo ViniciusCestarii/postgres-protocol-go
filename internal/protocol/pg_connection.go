@@ -14,6 +14,7 @@ import (
 
 type PgConnection struct {
 	conn        net.Conn
+	saslMethod  string
 	connConfig  models.ConnConfig
 	driveConfig models.DriveConfig
 }
