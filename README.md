@@ -44,7 +44,7 @@ cp .env.example .env
 ```
 
 ```bash
-go run cmd/server/main.go
+go run cmd/server.go
 ```
 
 ## Folder Structure

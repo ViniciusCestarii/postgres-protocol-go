@@ -61,20 +61,19 @@ func getConfig() (string, models.DriveConfig) {
 		connStr = PGURL
 	}
 
-	PGVERBOSE := os.Getenv("PGVERBOSE")
-
-	var verbose bool
-	if PGVERBOSE == "true" {
-		verbose = true
-	} else if PGVERBOSE == "false" {
-		verbose = false
-	}
+	PGVERBOSE := parseBoolEnv(os.Getenv("PGVERBOSE"))
+	PGSECURE := parseBoolEnv(os.Getenv("PGSECURE"))
 
 	driveConfig := models.DriveConfig{
-		Verbose: verbose,
+		Verbose: PGVERBOSE,
+		Secure:  PGSECURE,
 	}
 
 	return connStr, driveConfig
+}
+
+func parseBoolEnv(env string) bool {
+	return env == "true"
 }
 
 // func to load variables from .env file
