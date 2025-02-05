@@ -201,8 +201,6 @@ func parseConnStr(connUrl string) (models.ConnConfig, error) {
 			continue
 		}
 		if strings.HasPrefix(s, "sslmode=") {
-			fmt.Println("Secure connection")
-
 			sslmode := strings.SplitN(s, "=", 2)[1]
 			if sslmode == "require" {
 				connConfig.Secure = true
