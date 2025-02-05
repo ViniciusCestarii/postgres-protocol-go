@@ -18,6 +18,16 @@ func LogBackendAnswer(answer []byte) {
 	logSeparator()
 }
 
+func LogSingleByteBackendAnswer(answer []byte) {
+	backendLogSeparator()
+	fmt.Printf("Message: %d\n", answer)
+
+	var identifier = ParseIdentifier(answer)
+	fmt.Printf("Identifier: %s\n", identifier)
+
+	logSeparator()
+}
+
 func LogFrontendRequest(request []byte) {
 	idx := 0
 

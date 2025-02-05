@@ -8,6 +8,7 @@ import (
 	"testing"
 )
 
+// todo: improve mock server to handle authentication
 func startMockPostgresServer(t *testing.T, authSuccess bool) (string, func()) {
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {

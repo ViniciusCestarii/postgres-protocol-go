@@ -18,8 +18,12 @@ type PgConnection struct {
 	driveConfig models.DriveConfig
 }
 
-func NewPgConnection(connUrl string, driveConfig models.DriveConfig) (*PgConnection, error) {
-	connConfig := parseConnUrl(connUrl)
+func NewPgConnection(connStr string, driveConfig models.DriveConfig) (*PgConnection, error) {
+	connConfig, err := parseConnStr(connStr)
+
+	if err != nil {
+		return nil, err
+	}
 
 	url := fmt.Sprintf("%s:%d", connConfig.Host, connConfig.Port)
 
@@ -34,6 +38,14 @@ func NewPgConnection(connUrl string, driveConfig models.DriveConfig) (*PgConnect
 	}
 
 	pgConnection := PgConnection{conn: conn, connConfig: connConfig, driveConfig: driveConfig}
+
+	if connConfig.Secure {
+		err = ProcessSSL(&pgConnection)
+		if err != nil {
+			pgConnection.Close()
+			return nil, err
+		}
+	}
 
 	SendStartup(pgConnection)
 	err = ProcessAuth(pgConnection)
@@ -100,6 +112,20 @@ func (pg *PgConnection) readMessage() ([]byte, error) {
 	return fullMessage, nil
 }
 
+func (pg *PgConnection) readSingleByteMessage() ([]byte, error) {
+	message := make([]byte, 1)
+	_, err := pg.conn.Read(message)
+	if err != nil {
+		return nil, fmt.Errorf("error reading from connection: %w", err)
+	}
+
+	if pg.isVerbose() {
+		utils.LogSingleByteBackendAnswer(message)
+	}
+
+	return message, nil
+}
+
 func (pg *PgConnection) Close() {
 	buf := pool.NewWriteBuffer(5)
 	buf.StartMessage(messages.Terminate)
@@ -113,13 +139,13 @@ func (pg *PgConnection) isVerbose() bool {
 	return pg.driveConfig.Verbose
 }
 
-func parseConnUrl(connUrl string) models.ConnConfig {
+func parseConnStr(connUrl string) (models.ConnConfig, error) {
 	connConfig := models.ConnConfig{}
 
 	if strings.HasPrefix(connUrl, "postgres://") {
 		parsedUrl, err := url.Parse(connUrl)
 		if err != nil {
-			return connConfig // Return empty config on error
+			return connConfig, fmt.Errorf("failed to parse connection URL: %w", err)
 		}
 		connConfig.Host = parsedUrl.Hostname()
 		port := parsedUrl.Port()
@@ -137,7 +163,10 @@ func parseConnUrl(connUrl string) models.ConnConfig {
 		if path != "" {
 			connConfig.Database = &path
 		}
-		return connConfig
+		if parsedUrl.Query().Get("sslmode") == "require" {
+			connConfig.Secure = true
+		}
+		return connConfig, nil
 	}
 
 	split := strings.Fields(connUrl)
@@ -171,7 +200,16 @@ func parseConnUrl(connUrl string) models.ConnConfig {
 			connConfig.Password = &password
 			continue
 		}
+		if strings.HasPrefix(s, "sslmode=") {
+			fmt.Println("Secure connection")
+
+			sslmode := strings.SplitN(s, "=", 2)[1]
+			if sslmode == "require" {
+				connConfig.Secure = true
+			}
+			continue
+		}
 	}
 
-	return connConfig
+	return connConfig, nil
 }

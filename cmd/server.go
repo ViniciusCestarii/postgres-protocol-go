@@ -52,8 +52,14 @@ func getConfig() (string, models.DriveConfig) {
 	PGPASSWORD := os.Getenv("PGPASSWORD")
 	PGPORT := os.Getenv("PGPORT")
 	PGDATABASE := os.Getenv("PGDATABASE")
+	PGSECURE := parseBoolEnv(os.Getenv("PGSECURE"))
 
-	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s", PGHOST, PGUSER, PGPASSWORD, PGDATABASE, PGPORT)
+	secure := "disable"
+	if PGSECURE {
+		secure = "require"
+	}
+
+	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", PGHOST, PGUSER, PGPASSWORD, PGDATABASE, PGPORT, secure)
 
 	PGURL := os.Getenv("PGURL")
 
@@ -62,11 +68,9 @@ func getConfig() (string, models.DriveConfig) {
 	}
 
 	PGVERBOSE := parseBoolEnv(os.Getenv("PGVERBOSE"))
-	PGSECURE := parseBoolEnv(os.Getenv("PGSECURE"))
 
 	driveConfig := models.DriveConfig{
 		Verbose: PGVERBOSE,
-		Secure:  PGSECURE,
 	}
 
 	return connStr, driveConfig

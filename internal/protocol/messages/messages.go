@@ -5,6 +5,7 @@ import "postgres-protocol-go/internal/pool"
 // https://www.postgresql.org/docs/current/protocol-message-formats.html
 const (
 	Startup         = 0 // No identifier
+	SSL             = 0 // No identifier
 	Auth            = 'R'
 	Password        = 'p'
 	Error           = 'E'
