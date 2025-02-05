@@ -35,6 +35,24 @@ func main() {
 }
 ```
 
+## Features
+
+- Flexible Connection Handling
+	- Supports both URL-style connection strings (postgres://user:pass@host:port/db)
+	- Supports key-value connection strings (`host=localhost port=5432`)
+- SSL/TLS Support
+	- Automatic SSL/TLS negotiation when `sslmode=require`
+	- Secure encrypted connections
+-	Query Interface
+	-	Simple query protocol support
+	- Extended query protocol with parameter binding
+	- Support for parameterized queries using $1, $2 etc.
+- Connection Configuration
+	- Configurable verbose mode for debugging
+	- Custom drive configuration options via models.DriveConfig
+-	Clean Resource Management
+	- Proper connection termination
+
 ## Getting Started
 
 To run the server, use the following commands:
