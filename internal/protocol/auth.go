@@ -55,14 +55,14 @@ func ProcessAuth(pgConnection PgConnection) error {
 				}
 				clientNonce = nonce
 
-				buff := pool.NewWriteBuffer(1024)
-				buff.StartMessage(messages.SASLInitial)
-				buff.WriteString(saslMethod)
-				buff.WriteInt32(int32(len(initialResponse)))
-				buff.Write(initialResponse)
-				buff.FinishMessage()
+				buf := pool.NewWriteBuffer(1024)
+				buf.StartMessage(messages.SASLInitial)
+				buf.WriteString(saslMethod)
+				buf.WriteInt32(int32(len(initialResponse)))
+				buf.Write(initialResponse)
+				buf.FinishMessage()
 
-				if err := pgConnection.sendMessage(buff); err != nil {
+				if err := pgConnection.sendMessage(buf); err != nil {
 					return err
 				}
 			default:
