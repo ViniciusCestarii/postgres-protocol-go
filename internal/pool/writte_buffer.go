@@ -1,3 +1,5 @@
+// Credits to https://github.com/go-pg/pg/blob/v10/internal/pool/write_buffer.go
+
 package pool
 
 import (
