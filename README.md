@@ -2,8 +2,6 @@
 
 This project implements the PostgreSQL wire protocol in Go using only the standard library.
 
-(Currently under development 🚧)
-
 ## Usage
 
 ```go
