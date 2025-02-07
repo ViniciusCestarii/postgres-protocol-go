@@ -23,31 +23,33 @@ func processQueryResult(pgConnection PgConnection, query string) (*models.QueryR
 			return nil, err
 		}
 
-		switch utils.ParseIdentifier(message) {
-		case string(messages.RowDescription):
+		identifier := utils.ParseIdentifier(message)
+
+		switch identifier {
+		case messages.RowDescription:
 			fields, err = parseField(message)
 			if err != nil {
 				return nil, err
 			}
 			queryResult.Fields = fields
 
-		case string(messages.DataRow):
+		case messages.DataRow:
 			row := parseDataRow(message, fields)
 			queryResult.Rows = append(queryResult.Rows, row)
 
-		case string(messages.CommandComplete):
+		case messages.CommandComplete:
 			queryResult.RowCount = len(queryResult.Rows)
 
 			return queryResult, nil
 
-		case string(messages.Error):
+		case messages.Error:
 			identifierFieldType := string(message[5:6])
 			if identifierFieldType == "0" {
 				return nil, fmt.Errorf("PostgreSQL error: %s", utils.ParseNullTerminatedString(message[6:]))
 			}
 			return nil, fmt.Errorf("PostgreSQL error: %s: %s", identifierFieldType, utils.ParseNullTerminatedString(message[6:]))
 
-		case string(messages.Notice):
+		case messages.Notice:
 			identifierFieldType := string(message[5:6])
 			if pgConnection.isVerbose() {
 				continue
@@ -59,7 +61,7 @@ func processQueryResult(pgConnection PgConnection, query string) (*models.QueryR
 
 			fmt.Printf("PostgreSQL notice: %s: %s", identifierFieldType, utils.ParseNullTerminatedString(message[6:]))
 
-		case string(messages.ReadyForQuery):
+		case messages.ReadyForQuery:
 			continue
 
 		default:
@@ -103,8 +105,8 @@ func parseColumnValue(answer []byte, field models.Field, idxRead int) any {
 
 func parseField(answer []byte) ([]models.Field, error) {
 	identifier := utils.ParseIdentifier(answer)
-	if identifier != string(messages.RowDescription) {
-		return nil, fmt.Errorf("expected RowDescription message, got %s", identifier)
+	if identifier != messages.RowDescription {
+		return nil, fmt.Errorf("expected RowDescription message, got %s", string(identifier))
 	}
 
 	numberOfFields := parseNumberOfFields(answer)

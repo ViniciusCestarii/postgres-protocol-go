@@ -101,7 +101,7 @@ func (pg *PgConnection) readMessage() ([]byte, error) {
 
 	fullMessage := append(header, message...)
 
-	if identifier == string(messages.Error) {
+	if identifier == messages.Error {
 		return nil, fmt.Errorf("error from backend: %s", utils.ParseBackendErrorMessage(message))
 	}
 

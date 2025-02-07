@@ -31,9 +31,9 @@ func ProcessAuth(pgConnection PgConnection) error {
 			return err
 		}
 
-		identifier := utils.ParseIdentifier(answer)
-		if identifier != string(messages.Auth) {
-			return fmt.Errorf("expected auth message, got %s", identifier)
+		identifier := answer[0]
+		if identifier != messages.Auth {
+			return fmt.Errorf("expected auth message, got %s", utils.ParseIdentifierStr(answer))
 		}
 
 		authType := parseAuthType(answer)
@@ -234,8 +234,10 @@ func waitForReady(pgConnection PgConnection) error {
 			return err
 		}
 
-		switch utils.ParseIdentifier(message) {
-		case string(messages.ReadyForQuery):
+		identifier := message[0]
+
+		switch identifier {
+		case messages.ReadyForQuery:
 			return nil
 		default:
 			if pgConnection.isVerbose() {
