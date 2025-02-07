@@ -6,7 +6,11 @@ import (
 	"fmt"
 )
 
-func ParseIdentifier(message []byte) string {
+func ParseIdentifier(message []byte) byte {
+	return message[0]
+}
+
+func ParseIdentifierStr(message []byte) string {
 	return string(message[0:1])
 }
 
