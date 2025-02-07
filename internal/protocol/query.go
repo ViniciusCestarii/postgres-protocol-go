@@ -106,7 +106,7 @@ func parseColumnValue(answer []byte, field models.Field, idxRead int) any {
 func parseField(answer []byte) ([]models.Field, error) {
 	identifier := utils.ParseIdentifier(answer)
 	if identifier != messages.RowDescription {
-		return nil, fmt.Errorf("expected RowDescription message, got %s", string(identifier))
+		return nil, fmt.Errorf("expected RowDescription message, got %s", utils.ParseIdentifierStr(answer))
 	}
 
 	numberOfFields := parseNumberOfFields(answer)
