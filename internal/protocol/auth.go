@@ -31,7 +31,7 @@ func ProcessAuth(pgConnection PgConnection) error {
 			return err
 		}
 
-		identifier := answer[0]
+		identifier := utils.ParseIdentifier(answer)
 		if identifier != messages.Auth {
 			return fmt.Errorf("expected auth message, got %s", utils.ParseIdentifierStr(answer))
 		}
