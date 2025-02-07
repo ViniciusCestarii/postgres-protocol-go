@@ -234,7 +234,7 @@ func waitForReady(pgConnection PgConnection) error {
 			return err
 		}
 
-		identifier := message[0]
+		identifier := utils.ParseIdentifier(message)
 
 		switch identifier {
 		case messages.ReadyForQuery:
