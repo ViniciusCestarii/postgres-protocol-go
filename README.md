@@ -53,24 +53,31 @@ func main() {
 -	Clean Resource Management
 	- Proper connection termination
 
-## Getting Started
+## Testing the Client Implementation
 
-To run the server, use the following commands:
+1. Clone the repository:
+	```bash
+	git clone https://github.com/ViniciusCestarii/postgres-protocol-go.git
+	```
 
-```bash
-cp .env.example .env
-```
+2. Create environment file:
+	```bash
+	cp .env.example .env
+	```
 
-```bash
-go run cmd/server.go
-```
+3. Set the environment variables in the `.env` file.
+
+4. Run the client implementation:
+	```bash
+	go run cmd/client.go
+	```
 
 ## Folder Structure
 
 ```bash
 postgres-protocol-go/
 │── cmd/
-│   ├── server/          # Main entry point for the server
+│   ├── client.go        # Client implementation example using this driver
 │── internal/
 │   ├── pool/            # Buff writer
 │   ├── protocol/        # PostgreSQL wire protocol handling
