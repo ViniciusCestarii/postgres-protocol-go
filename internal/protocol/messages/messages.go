@@ -7,6 +7,8 @@ const (
 	Startup         = 0 // No identifier
 	SSL             = 0 // No identifier
 	Auth            = 'R'
+	SASLInitial     = 'p'
+	SASLResponse    = 'p'
 	Password        = 'p'
 	Error           = 'E'
 	SimpleQuery     = 'Q'

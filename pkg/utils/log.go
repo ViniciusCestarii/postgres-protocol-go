@@ -9,7 +9,7 @@ func LogBackendAnswer(answer []byte) {
 	backendLogSeparator()
 	fmt.Printf("Message: %d\n", answer)
 
-	var identifier = ParseIdentifier(answer)
+	var identifier = string(ParseIdentifierStr(answer))
 	fmt.Printf("Identifier: %s\n", identifier)
 
 	messageLength := ParseMessageLength(answer)
@@ -22,7 +22,7 @@ func LogSingleByteBackendAnswer(answer []byte) {
 	backendLogSeparator()
 	fmt.Printf("Message: %d\n", answer)
 
-	var identifier = ParseIdentifier(answer)
+	var identifier = string(ParseIdentifierStr(answer))
 	fmt.Printf("Identifier: %s\n", identifier)
 
 	logSeparator()
@@ -42,7 +42,7 @@ func LogOneFrontendRequest(request []byte) {
 	frontedLogSeparator()
 	fmt.Printf("Message: %d\n", request)
 
-	var identifier = ParseIdentifier(request)
+	var identifier = ParseIdentifierStr(request)
 	fmt.Printf("Identifier: %s\n", identifier)
 
 	messageLength := ParseMessageLength(request)

@@ -101,7 +101,7 @@ func (pg *PgConnection) readMessage() ([]byte, error) {
 
 	fullMessage := append(header, message...)
 
-	if identifier == string(messages.Error) {
+	if identifier == messages.Error {
 		return nil, fmt.Errorf("error from backend: %s", utils.ParseBackendErrorMessage(message))
 	}
 
@@ -201,8 +201,6 @@ func parseConnStr(connUrl string) (models.ConnConfig, error) {
 			continue
 		}
 		if strings.HasPrefix(s, "sslmode=") {
-			fmt.Println("Secure connection")
-
 			sslmode := strings.SplitN(s, "=", 2)[1]
 			if sslmode == "require" {
 				connConfig.Secure = true

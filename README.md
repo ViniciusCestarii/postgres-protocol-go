@@ -2,8 +2,6 @@
 
 This project implements the PostgreSQL wire protocol in Go using only the standard library.
 
-(Currently under development 🚧)
-
 ## Usage
 
 ```go
@@ -43,14 +41,18 @@ func main() {
 - SSL/TLS Support
 	- Automatic SSL/TLS negotiation when `sslmode=require`
 	- Secure encrypted connections
--	Query Interface
-	-	Simple query protocol support
+- Query Interface
+	- Simple query protocol support
 	- Extended query protocol with parameter binding
 	- Support for parameterized queries using $1, $2 etc.
 - Connection Configuration
 	- Configurable verbose mode for debugging
 	- Custom drive configuration options via models.DriveConfig
--	Clean Resource Management
+- Authentication
+	- SCRAM-SHA-256
+  	- md5
+  	- clear text
+- Clean Resource Management
 	- Proper connection termination
 
 ## Testing the Client Implementation
@@ -97,11 +99,15 @@ To run the tests, use the following commands:
 go test ./tests/...
 ```
 
-## Aknowledgements
+## Acknowledgements
 
-[Official Protocol Documentation](https://www.postgresql.org/docs/current/protocol.html)
+[Official Protocol Documentation](https://www.postgresql.org/docs/16/protocol.html)
 
-[Message Formats](https://www.postgresql.org/docs/current/protocol-message-formats.html)
+[Message Formats](https://www.postgresql.org/docs/16/protocol-message-formats.html)
+
+[pbkdf2 go implementation](https://cs.opensource.google/go/x/crypto/+/refs/tags/v0.32.0:pbkdf2/pbkdf2.go)
+
+[gp-pg](https://github.com/go-pg/pg)
 
 ## License
 

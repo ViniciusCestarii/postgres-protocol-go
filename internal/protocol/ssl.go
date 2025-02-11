@@ -8,12 +8,12 @@ import (
 )
 
 func ProcessSSL(pgConnection *PgConnection) error {
-	buff := pool.NewWriteBuffer(1024)
-	buff.StartMessage(messages.SSL)
-	buff.WriteInt32(80877103)
-	buff.FinishMessage()
+	buf := pool.NewWriteBuffer(1024)
+	buf.StartMessage(messages.SSL)
+	buf.WriteInt32(80877103)
+	buf.FinishMessage()
 
-	err := pgConnection.sendMessage(buff)
+	err := pgConnection.sendMessage(buf)
 
 	if err != nil {
 		return err
