@@ -55,7 +55,7 @@ func main() {
 - Clean Resource Management
 	- Proper connection termination
 
-## Testing the Client Implementation
+## Running the Client Implementation example
 
 1. Clone the repository:
 	```bash
