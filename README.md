@@ -88,7 +88,7 @@ To run the tests, use the following commands:
 go test ./tests/...
 ```
 
-## Aknowledgements
+## Acknowledgements
 
 [Official Protocol Documentation](https://www.postgresql.org/docs/current/protocol.html)
 
