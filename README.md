@@ -98,6 +98,10 @@ go test ./tests/...
 
 [Message Formats](https://www.postgresql.org/docs/16/protocol-message-formats.html)
 
+[pbkdf2 go implementation](https://cs.opensource.google/go/x/crypto/+/refs/tags/v0.32.0:pbkdf2/pbkdf2.go)
+
+[gp-pg](https://github.com/go-pg/pg)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
