@@ -99,7 +99,7 @@ To run the tests, use the following commands:
 go test ./tests/...
 ```
 
-## Acknowledgements
+## Resources
 
 [Official Protocol Documentation](https://www.postgresql.org/docs/16/protocol.html)
 
